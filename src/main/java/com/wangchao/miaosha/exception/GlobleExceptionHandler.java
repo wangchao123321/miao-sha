@@ -18,6 +18,7 @@ public class GlobleExceptionHandler {
 
     @ExceptionHandler(value = Exception.class)
     public Result<String> exceptionHandler(HttpServletRequest request, HttpServletResponse response,Exception e){
+        e.printStackTrace();
         if(e instanceof GlobleException){
             GlobleException ex = (GlobleException) e;
             return Result.error(ex.getCodeMsg());
