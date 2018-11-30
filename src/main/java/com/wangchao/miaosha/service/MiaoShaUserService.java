@@ -6,7 +6,6 @@ import com.wangchao.miaosha.exception.GlobleException;
 import com.wangchao.miaosha.redis.MiaoshaUserKey;
 import com.wangchao.miaosha.redis.RedisService;
 import com.wangchao.miaosha.result.CodeMsg;
-import com.wangchao.miaosha.result.Result;
 import com.wangchao.miaosha.util.MD5Util;
 import com.wangchao.miaosha.util.UUIDUtil;
 import com.wangchao.miaosha.vo.LoginVo;
@@ -44,7 +43,9 @@ public class MiaoShaUserService {
         if(!dbPass.equals(MD5Util.formPassToDBPass(password,slatDB))){
             throw  new GlobleException(CodeMsg.PASSWORD_ERROR);
         }
-        addCookie(user,response);
+        // 生成cookie
+        String token = UUIDUtil.uuid();
+        addCookie(user,token,response);
         return true;
     }
 
@@ -55,18 +56,18 @@ public class MiaoShaUserService {
         MiaoshaUser user = redisService.get(MiaoshaUserKey.token, token, MiaoshaUser.class);
         // 延长有效期
         if(user != null){
-            addCookie(user,response);
+            addCookie(user,token,response);
         }
         return user;
     }
 
-    private void addCookie(MiaoshaUser user,HttpServletResponse response){
-        // 生成cookie
-        String token = UUIDUtil.uuid();
+    private void addCookie(MiaoshaUser user,String token,HttpServletResponse response){
+
         redisService.set(MiaoshaUserKey.token,token,user);
         Cookie cookie = new Cookie(COOKIE_NAME_TOKEN,token);
         cookie.setMaxAge(MiaoshaUserKey.token.expireSeconds());
         cookie.setPath("/");
+        cookie.setDomain("");
         response.addCookie(cookie);
     }
 }
