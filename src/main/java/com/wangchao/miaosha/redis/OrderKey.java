@@ -3,7 +3,10 @@ package com.wangchao.miaosha.redis;
 public class OrderKey extends BasePrefix {
 
 
-    public OrderKey(int expireSeconds, String prefix) {
-        super(expireSeconds, prefix);
+    public OrderKey( String prefix) {
+        super( prefix);
     }
+
+
+    public static OrderKey getMiaoshUserByUidGid = new OrderKey("moug");
 }

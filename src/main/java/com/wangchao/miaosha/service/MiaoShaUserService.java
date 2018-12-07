@@ -27,6 +27,34 @@ public class MiaoShaUserService {
     @Autowired
     private RedisService redisService;
 
+    public MiaoshaUser getById(long id){
+        MiaoshaUser user = redisService.get(MiaoshaUserKey.getById, "" + id, MiaoshaUser.class);
+        if(user != null){
+            return user;
+        }
+        user = userDao.getById(id);
+        if(user != null){
+            redisService.set(MiaoshaUserKey.getById,"" + id,user);
+        }
+        return user;
+    }
+
+    public boolean updatePassword(String token, long id, String passwordNew){
+        MiaoshaUser user = getById(id);
+        if(user == null){
+            throw new GlobleException(CodeMsg.MOBILE_NOT_EXIST);
+        }
+        MiaoshaUser toBeUpdate = new MiaoshaUser();
+        toBeUpdate.setId(id);
+        toBeUpdate.setPassword(MD5Util.formPassToDBPass(passwordNew,user.getSalt()));
+        userDao.update(toBeUpdate);
+        redisService.delete(MiaoshaUserKey.getById,"" + id);
+        user.setPassword(toBeUpdate.getPassword());
+        redisService.set(MiaoshaUserKey.token,token,user);
+        return true;
+    }
+
+
     public boolean login(HttpServletResponse response,LoginVo loginVo){
         if(loginVo == null){
             throw  new GlobleException(CodeMsg.SERVER_ERROR);

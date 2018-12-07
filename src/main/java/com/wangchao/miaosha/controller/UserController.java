@@ -1,11 +1,14 @@
 package com.wangchao.miaosha.controller;
 
+import com.wangchao.miaosha.domain.MiaoshaUser;
 import com.wangchao.miaosha.domain.User;
 import com.wangchao.miaosha.redis.RedisService;
 import com.wangchao.miaosha.redis.UserKey;
+import com.wangchao.miaosha.result.Result;
 import com.wangchao.miaosha.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -19,6 +22,13 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @RequestMapping("/info")
+    @ResponseBody
+    public Result<MiaoshaUser> info(Model model, MiaoshaUser user){
+        return Result.success(user);
+    }
+
 
     @RequestMapping("/user")
     @ResponseBody

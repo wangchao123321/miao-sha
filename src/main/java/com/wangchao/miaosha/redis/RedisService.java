@@ -13,117 +13,128 @@ public class RedisService {
     private JedisPool jedisPool;
 
 
-
-    public <T> T get(KeyPrefix prefix,String key,Class<T> clazz){
+    public <T> T get(KeyPrefix prefix, String key, Class<T> clazz) {
         Jedis jedis = null;
         try {
             jedis = jedisPool.getResource();
             // 生成真正的key
             String realKey = prefix.getPrefix() + key;
-            String str =jedis.get(realKey);
-            T t = stringToBean(str,clazz);
+            String str = jedis.get(realKey);
+            T t = stringToBean(str, clazz);
             return t;
-        }finally {
+        } finally {
             returnToPool(jedis);
         }
     }
 
-    public <T> boolean set(KeyPrefix prefix,String key,T value){
+    public <T> boolean set(KeyPrefix prefix, String key, T value) {
         Jedis jedis = null;
         try {
             jedis = jedisPool.getResource();
             String str = beanToString(value);
-            if(str == null || str.length() <= 0){
+            if (str == null || str.length() <= 0) {
                 return false;
             }
             // 生成真正的key
             String realKey = prefix.getPrefix() + key;
             int i = prefix.expireSeconds();
-            if(i <= 0){
-                jedis.set(realKey,str);
-            }else{
-                jedis.setex(realKey,i,str);
+            if (i <= 0) {
+                jedis.set(realKey, str);
+            } else {
+                jedis.setex(realKey, i, str);
             }
 
             return true;
-        }finally {
+        } finally {
             returnToPool(jedis);
         }
     }
 
-    public <T> boolean exists(KeyPrefix prefix,String key){
+    public <T> boolean exists(KeyPrefix prefix, String key) {
         Jedis jedis = null;
         try {
-            jedis = jedisPool.getResource   ();
+            jedis = jedisPool.getResource();
             // 生成真正的key
             String realKey = prefix.getPrefix() + key;
             return jedis.exists(realKey);
-        }finally {
+        } finally {
             returnToPool(jedis);
         }
     }
 
-    public <T> Long incr(KeyPrefix prefix,String key){
+    public boolean delete(KeyPrefix prefix, String key) {
         Jedis jedis = null;
         try {
-            jedis = jedisPool.getResource   ();
+            jedis = jedisPool.getResource();
+            // 生成真正的key
+            String realKey = prefix.getPrefix() + key;
+            long ret = jedis.del(realKey);
+            return ret > 0;
+        } finally {
+            returnToPool(jedis);
+        }
+    }
+
+    public <T> Long incr(KeyPrefix prefix, String key) {
+        Jedis jedis = null;
+        try {
+            jedis = jedisPool.getResource();
             // 生成真正的key
             String realKey = prefix.getPrefix() + key;
             return jedis.incr(realKey);
-        }finally {
+        } finally {
             returnToPool(jedis);
         }
     }
 
-    public <T> Long decr(KeyPrefix prefix,String key){
+    public <T> Long decr(KeyPrefix prefix, String key) {
         Jedis jedis = null;
         try {
-            jedis = jedisPool.getResource   ();
+            jedis = jedisPool.getResource();
             // 生成真正的key
             String realKey = prefix.getPrefix() + key;
             return jedis.decr(realKey);
-        }finally {
+        } finally {
             returnToPool(jedis);
         }
     }
 
     private <T> String beanToString(T value) {
-        if(value == null){
+        if (value == null) {
             return null;
         }
         Class<?> clazz = value.getClass();
-        if(clazz == int.class || clazz == Integer.class){
-            return ""+value;
-        }else if(clazz == String.class){
+        if (clazz == int.class || clazz == Integer.class) {
+            return "" + value;
+        } else if (clazz == String.class) {
             return (String) value;
-        }else if(clazz == long.class || clazz == Long.class){
-            return ""+value;
-        }else{
+        } else if (clazz == long.class || clazz == Long.class) {
+            return "" + value;
+        } else {
             return JSON.toJSONString(value);
         }
     }
 
-    private <T> T stringToBean(String str,Class<T> clazz) {
-        if(str == null || str.length() <= 0 || clazz == null){
+    private <T> T stringToBean(String str, Class<T> clazz) {
+        if (str == null || str.length() <= 0 || clazz == null) {
             return null;
         }
-        if(clazz == int.class || clazz == Integer.class){
-            return (T)Integer.valueOf(str);
-        }else if(clazz == String.class){
-            return (T)str;
-        }else if(clazz == long.class || clazz == Long.class){
-            return (T)Long.valueOf(str);
-        }else{
-            return JSON.toJavaObject(JSON.parseObject(str),clazz);
+        if (clazz == int.class || clazz == Integer.class) {
+            return (T) Integer.valueOf(str);
+        } else if (clazz == String.class) {
+            return (T) str;
+        } else if (clazz == long.class || clazz == Long.class) {
+            return (T) Long.valueOf(str);
+        } else {
+            return JSON.toJavaObject(JSON.parseObject(str), clazz);
         }
     }
 
     private void returnToPool(Jedis jedis) {
-        if(jedis != null){
+        if (jedis != null) {
             jedis.close();
         }
     }
-
 
 
 }
