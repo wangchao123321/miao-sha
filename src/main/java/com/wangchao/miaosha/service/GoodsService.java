@@ -23,10 +23,11 @@ public class GoodsService {
         return goodsDao.getGoodsVoByGoodsId(goodsId);
     }
 
-    public void reduceStock(GoodsVo goods) {
+    public boolean reduceStock(GoodsVo goods) {
         // 减库存 下订单 写入秒杀订单
         MiaoshaGoods g = new MiaoshaGoods();
         g.setGoodsId(goods.getId());
-        goodsDao.reduceStock(g);
+        int i = goodsDao.reduceStock(g);
+        return i > 0;
     }
 }
