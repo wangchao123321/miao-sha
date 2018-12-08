@@ -23,7 +23,7 @@ public class HelloController {
     @RequestMapping("/mq")
     @ResponseBody
     public String mq(){
-        mqSender.send("hello mq");
+//        mqSender.send("hello mq");
         return "hello mq";
     }
 
